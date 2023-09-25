@@ -31,10 +31,13 @@ def get_model_info(modelId, revision: str = "main", hub_token: str = None):
             return None
 
         res = req.json()
+        print(res)
 
         # filter out models which have custom modelling files
-        if any(model["rfilename"].startswith("modeling") for model in res["siblings"]) or any(
-            model["rfilename"].endswith("pipeline.py") for model in res["siblings"]
+        if (
+            any(model["rfilename"].startswith("modeling") for model in res["siblings"])
+            or any(model["rfilename"].endswith("pipeline.py") for model in res["siblings"])
+            or any(model["rfilename"].startswith("modelling") for model in res["siblings"])
         ):
             print(f"Skipping model {modelId} because it has custom modelling files")
             is_custom_model = True
@@ -93,3 +96,8 @@ def get_recommended_accelerator(model_size: int):
 def is_model_supported_in_tgi(model_type: str):
     """Check if the model is supported in TGI"""
     return model_type in SUPPORTED_TGI_MODELS
+
+
+def get_tgi_min_memory(model_size: int):
+    """Get the min required memory for the model in MB"""
+    return round(model_size * 1.4)

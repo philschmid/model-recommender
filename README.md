@@ -11,6 +11,7 @@ pip install -e .
 get info
 ```bash
 modeler -m bert-base-uncased
+modeler -m tiiuae/falcon-7b
 ```
 
 ## Features

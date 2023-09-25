@@ -1,8 +1,9 @@
-from modeler.models.response import InferenceModeler, ModelerResponse
+from modeler.models.response import InferenceModeler, ModelerResponse, TgiInference
 from modeler.utils.huggingface_utils import (
     get_model_info,
     get_recommended_accelerator,
     get_required_memory,
+    get_tgi_min_memory,
     is_model_supported_in_tgi,
 )
 from modeler.utils.sagemaker_utils import get_sagemaker_info
@@ -15,14 +16,19 @@ def modeler(model_id: str, revision: str = "main", hub_token: str = None) -> Mod
     is_tgi_supported = is_model_supported_in_tgi(hf_model.model_type)
     if is_tgi_supported:
         rec_accelerator = "gpu"
+        tgi_min_memory = get_tgi_min_memory(hf_model.size_in_mb)
+        tgi = TgiInference(is_supported=True, min_required_memory_in_mb=tgi_min_memory)
     else:
         # get recommended accelerator
         rec_accelerator = get_recommended_accelerator(hf_model.size_in_mb)
+        tgi = TgiInference()
     # get min required memory
     min_required_memory = get_required_memory(hf_model.size_in_mb, rec_accelerator)
 
     # sagemaker
     sagemaker = get_sagemaker_info(hf_model, rec_accelerator)
+
+    # tgi
 
     # construct response object
     res = ModelerResponse(
@@ -30,8 +36,8 @@ def modeler(model_id: str, revision: str = "main", hub_token: str = None) -> Mod
             min_required_memory=min_required_memory,
             is_custom_model=hf_model.is_custom_model,
             is_gated=hf_model.gated,
-            is_tgi_supported=is_tgi_supported,
             recommended_accelerator=rec_accelerator,
+            tgi=tgi,
             sagemaker=sagemaker,
         )
     )

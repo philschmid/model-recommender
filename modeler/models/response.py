@@ -9,11 +9,17 @@ class SageMakerInference:
 
 
 @dataclass
+class TgiInference:
+    is_supported: bool = False
+    min_required_memory_in_mb: Optional[str] = None
+
+
+@dataclass
 class InferenceModeler:
     recommended_accelerator: str
     min_required_memory: int
     sagemaker: SageMakerInference
-    is_tgi_supported: Optional[bool] = False
+    tgi: TgiInference
     is_custom_model: Optional[bool] = False
     is_gated: Optional[bool] = False
 

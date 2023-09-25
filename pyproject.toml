@@ -33,7 +33,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 scripts = { modeler = "modeler.cli:main" }
-# dependencies = ["starlette==0.22.0"]
+dependencies = ["jinja2"]
 
 [project.optional-dependencies]
 test = ["pytest", "ruff", "black", "isort", "mypy", "hatch"]
