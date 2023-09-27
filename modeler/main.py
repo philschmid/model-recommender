@@ -1,10 +1,8 @@
-from modeler.models.response import InferenceModeler, ModelerResponse, TgiInference
+from modeler.models.response import InferenceModeler, ModelerResponse, TgiInference, Accelerator
 from modeler.utils.huggingface_utils import (
     get_model_info,
     get_recommended_accelerator,
     get_required_memory,
-    get_tgi_min_memory,
-    is_model_supported_in_tgi,
 )
 from modeler.utils.sagemaker_utils import get_sagemaker_info
 
@@ -12,31 +10,37 @@ from modeler.utils.sagemaker_utils import get_sagemaker_info
 def modeler(model_id: str, revision: str = "main", hub_token: str = None) -> ModelerResponse:
     # get model info
     hf_model = get_model_info(model_id, revision, hub_token)
-    # check if model is supported in TGI
-    is_tgi_supported = is_model_supported_in_tgi(hf_model.model_type)
-    if is_tgi_supported:
-        rec_accelerator = "gpu"
-        tgi_min_memory = get_tgi_min_memory(hf_model.size_in_mb)
-        tgi = TgiInference(is_supported=True, min_required_memory_in_mb=tgi_min_memory)
+    if hf_model.is_tgi_supported:
+        rec_accelerator = Accelerator(type="gpu", supports_model_parallelism=True)
+        tgi = TgiInference(
+            required_model_memory={
+                "fp32": hf_model.size_in_bytes_fp32,
+                "fp16": hf_model.size_in_bytes_fp32 / 2,
+                "int8": hf_model.size_in_bytes_fp32 / 4,
+                "int4": hf_model.size_in_bytes_fp32 / 8,
+            },
+            additonal_memory_total_tokens={
+                "1024": None,
+                "2048": None,
+                "4096": None,
+                "8192": None,
+                "16384": None,
+            },
+        )
     else:
         # get recommended accelerator
-        rec_accelerator = get_recommended_accelerator(hf_model.size_in_mb)
-        tgi = TgiInference()
-    # get min required memory
-    min_required_memory = get_required_memory(hf_model.size_in_mb, rec_accelerator)
+        tgi = None
+        accelerator = get_recommended_accelerator(hf_model.size_in_bytes_fp32)
+        rec_accelerator = Accelerator(type=accelerator, supports_model_parallelism=False)
 
     # sagemaker
-    sagemaker = get_sagemaker_info(hf_model, rec_accelerator)
-
+    sagemaker = get_sagemaker_info(hf_model, rec_accelerator.type)
     # tgi
-
-    # construct response object
     res = ModelerResponse(
         inference=InferenceModeler(
-            min_required_memory=min_required_memory,
-            is_custom_model=hf_model.is_custom_model,
-            is_gated=hf_model.gated,
             recommended_accelerator=rec_accelerator,
+            min_required_memory=get_required_memory(hf_model.size_in_bytes_fp32),
+            model=hf_model,
             tgi=tgi,
             sagemaker=sagemaker,
         )

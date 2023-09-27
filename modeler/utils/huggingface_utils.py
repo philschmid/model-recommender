@@ -1,11 +1,13 @@
+from typing import Union
 import requests
+from accelerate.commands.estimate import estimate_command_parser, gather_data
 from huggingface_hub.hf_api import HfApi
 
 from modeler.models.huggingface import HfModel
-from modeler.utils.const import SUPPORTED_TGI_MODELS
 
 HF_API = HfApi()
 
+parser = estimate_command_parser()
 
 # def validate_model_task(model: ModelInfo):
 #     """Validate if the model task is supported by the modeler"""
@@ -21,7 +23,7 @@ def get_model_info(modelId, revision: str = "main", hub_token: str = None):
     headers = requests.utils.default_headers()
     headers.update({"User-Agent": "is_ci"})
     try:
-        url = f"https://huggingface.co/api/models/{modelId}/revision/{revision}?blobs=1"
+        url = f"https://huggingface.co/api/models/{modelId}/revision/{revision}"
         if hub_token:
             headers.update({"Authorization": f"Bearer {hub_token}"})
         req = requests.get(url, headers=headers)
@@ -29,42 +31,36 @@ def get_model_info(modelId, revision: str = "main", hub_token: str = None):
         if req.status_code != 200:
             print(f"Error while getting model info for {modelId}: {req.status_code} , response: {req.text}")
             return None
-
         res = req.json()
-        print(res)
 
         # filter out models which have custom modelling files
-        if (
-            any(model["rfilename"].startswith("modeling") for model in res["siblings"])
-            or any(model["rfilename"].endswith("pipeline.py") for model in res["siblings"])
-            or any(model["rfilename"].startswith("modelling") for model in res["siblings"])
-        ):
-            print(f"Skipping model {modelId} because it has custom modelling files")
-            is_custom_model = True
-        else:
-            is_custom_model = False
+        is_custom_model = True if "custom_code" in res["tags"] else False
+        # TGI support
+        is_tgi_supported = True if "text-generation-inference" in res["tags"] else False
+        is_gated = True if "gated" in res["tags"] else False
 
-        # model size
-        filtered_model_files = [model for model in res["siblings"] if model["rfilename"].startswith("pytorch")]
-        model_size = sum([model["size"] for model in filtered_model_files])
+        # raw model size
+        model_size_in_bytes_fp32 = get_model_size(modelId, "float32")["model_size_in_bytes"]
+        # model_size_in_bytes_fp16 = model_size_in_bytes_fp32 / 2
+        # model_size_in_bytes_int8 = model_size_in_bytes_fp32 / 4
+        # model_size_in_bytes_int4 = model_size_in_bytes_fp32 / 8
 
+        # model data class
         model = HfModel(
             id=res["id"],
             model_type=res["config"]["model_type"],
             task=res["pipeline_tag"],
             library=res["library_name"],
             tags=res["tags"],
-            size_in_mb=int(round(model_size / 1024 / 1024, 0)),
+            size_in_bytes_fp32=model_size_in_bytes_fp32,
             is_custom_model=is_custom_model,
+            is_tgi_supported=is_tgi_supported,
+            is_gated=is_gated,
         )
 
         # widget data
         if "widgetData" in res:
             model.widget_data = res["widgetData"][0]
-
-        # gated
-        if "gated" in res:
-            model.gated = res["gated"]
 
         # get license from tags
         if any(tag.startswith("license") for tag in model.tags):
@@ -77,27 +73,27 @@ def get_model_info(modelId, revision: str = "main", hub_token: str = None):
         return None
 
 
-def get_required_memory(model_size: int, accelerator: str = "CPU"):
+def get_model_size(model_id: str, dtype: str):
+    args = parser.parse_args([model_id, "--dtypes", dtype])
+    output = gather_data(args)
+    return {
+        "dtype": dtype,
+        "model_size_in_bytes": output[0][2],
+        "model_size_in_megabytes": output[0][2] / (1024 * 1024),
+        "infernece_size_in_bytes": output[0][2] * 1.2,
+        "infernece_size_in_megabytes": output[0][2] * 1.2 / (1024 * 1024),
+    }
+
+
+def get_required_memory(model_size: int):
     """Get the required memory for the model in MB"""
-    if accelerator == "CPU":
-        return model_size * 2.3
-    else:
-        return model_size * 1.5
+    return model_size * 1.2
 
 
 def get_recommended_accelerator(model_size: int):
     """Get the recommended accelerator for the model"""
-    if model_size > 1000:
+    # > 1GB -> GPU
+    if model_size > 1_000_000_000:
         return "gpu"
     else:
         return "cpu"
-
-
-def is_model_supported_in_tgi(model_type: str):
-    """Check if the model is supported in TGI"""
-    return model_type in SUPPORTED_TGI_MODELS
-
-
-def get_tgi_min_memory(model_size: int):
-    """Get the min required memory for the model in MB"""
-    return round(model_size * 1.4)

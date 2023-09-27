@@ -1,51 +1,39 @@
-SUPPORTED_TGI_MODELS = [
-    "bloom",
-    "t5",
-    "mt5",
-    "gpt_neox",
-    "gpt2",
-    "llama",
-    "gpt_bigcode",
-    "RefinedWeb",
-    "RefinedWebModel",
-]
-
 SAGEMAKER_INFERENCE_INSTANCE_TYPES = {
     "cpu": [
-        {"name": "c6i.large", "memoryInGB": "4"},
-        {"name": "c6i.xlarge", "memoryInGB": "8"},
-        {"name": "c6i.2xlarge", "memoryInGB": "16"},
-        {"name": "c6i.4xlarge", "memoryInGB": "32"},
-        {"name": "c6i.8xlarge", "memoryInGB": "64"},
-        {"name": "c6i.12xlarge", "memoryInGB": "96"},
-        {"name": "c6i.16xlarge", "memoryInGB": "128"},
-        {"name": "c6i.24xlarge", "memoryInGB": "192"},
-        {"name": "c6i.32xlarge", "memoryInGB": "256"},
-        {"name": "m5.large", "memoryInGB": "8"},
-        {"name": "m5.xlarge", "memoryInGB": "16"},
-        {"name": "m5.2xlarge", "memoryInGB": "32"},
-        {"name": "m5.4xlarge", "memoryInGB": "64"},
-        {"name": "m5.8xlarge", "memoryInGB": "128"},
-        {"name": "m5.12xlarge", "memoryInGB": "192"},
-        {"name": "m5.16xlarge", "memoryInGB": "256"},
-        {"name": "m5.24xlarge", "memoryInGB": "384"},
-        {"name": "c5.large", "memoryInGB": "4"},
-        {"name": "c5.xlarge", "memoryInGB": "8"},
-        {"name": "c5.2xlarge", "memoryInGB": "16"},
-        {"name": "c5.4xlarge", "memoryInGB": "32"},
-        {"name": "c5.9xlarge", "memoryInGB": "72"},
-        {"name": "c5.12xlarge", "memoryInGB": "96"},
-        {"name": "c5.18xlarge", "memoryInGB": "144"},
-        {"name": "c5.24xlarge", "memoryInGB": "192"},
+        {"name": "ml.c6i.large", "memoryInGB": "4"},
+        {"name": "ml.c6i.xlarge", "memoryInGB": "8"},
+        {"name": "ml.c6i.2xlarge", "memoryInGB": "16"},
+        {"name": "ml.c6i.4xlarge", "memoryInGB": "32"},
+        {"name": "ml.c6i.8xlarge", "memoryInGB": "64"},
+        {"name": "ml.c6i.12xlarge", "memoryInGB": "96"},
+        {"name": "ml.c6i.16xlarge", "memoryInGB": "128"},
+        {"name": "ml.c6i.24xlarge", "memoryInGB": "192"},
+        {"name": "ml.c6i.32xlarge", "memoryInGB": "256"},
+        {"name": "ml.m5.large", "memoryInGB": "8"},
+        {"name": "ml.m5.xlarge", "memoryInGB": "16"},
+        {"name": "ml.m5.2xlarge", "memoryInGB": "32"},
+        {"name": "ml.m5.4xlarge", "memoryInGB": "64"},
+        {"name": "ml.m5.8xlarge", "memoryInGB": "128"},
+        {"name": "ml.m5.12xlarge", "memoryInGB": "192"},
+        {"name": "ml.m5.16xlarge", "memoryInGB": "256"},
+        {"name": "ml.m5.24xlarge", "memoryInGB": "384"},
+        {"name": "ml.c5.large", "memoryInGB": "4"},
+        {"name": "ml.c5.xlarge", "memoryInGB": "8"},
+        {"name": "ml.c5.2xlarge", "memoryInGB": "16"},
+        {"name": "ml.c5.4xlarge", "memoryInGB": "32"},
+        {"name": "ml.c5.9xlarge", "memoryInGB": "72"},
+        {"name": "ml.c5.12xlarge", "memoryInGB": "96"},
+        {"name": "ml.c5.18xlarge", "memoryInGB": "144"},
+        {"name": "ml.c5.24xlarge", "memoryInGB": "192"},
     ],
     "gpu": [
-        {"name": "ml.g4dn.xlarge", "memoryInGB": "16"},
-        {"name": "g4dn.12xlarge", "memoryInGB": "64"},
-        {"name": "g4dn.metal", "memoryInGB": "128"},
-        {"name": "g5.24xlarge", "memoryInGB": "96"},
-        {"name": "g5.48xlarge", "memoryInGB": "192"},
-        {"name": "p4d.24xlarge", "memoryInGB": "320"},
-        {"name": "p4de.24xlarge", "memoryInGB": "640"},
+        {"name": "ml.g4dn.xlarge", "memoryInGB": "16", "numGpus": "1"},
+        {"name": "g4dn.12xlarge", "memoryInGB": "64", "numGpus": "4"},
+        {"name": "g4dn.metal", "memoryInGB": "128", "numGpus": "8"},
+        {"name": "g5.24xlarge", "memoryInGB": "96", "numGpus": "4"},
+        {"name": "g5.48xlarge", "memoryInGB": "192", "numGpus": "8"},
+        {"name": "p4d.24xlarge", "memoryInGB": "320", "numGpus": "8"},
+        {"name": "p4de.24xlarge", "memoryInGB": "640", "numGpus": "8"},
         # Add more GPU instance types as needed
     ],
 }
@@ -199,6 +187,44 @@ with open("cats.jpg", "rb") as f:
 predictor.predict(data)
 """
 
+TGI_INFERENCE_SNIPPET = """import json
+import sagemaker
+import boto3
+from sagemaker.huggingface import HuggingFaceModel, get_huggingface_llm_image_uri
+
+try:
+	role = sagemaker.get_execution_role()
+except ValueError:
+	iam = boto3.client('iam')
+	role = iam.get_role(RoleName='sagemaker_execution_role')['Role']['Arn']
+
+# Hub Model configuration. https://huggingface.co/models
+hub = {{
+	'HF_MODEL_ID':'{model_id}',
+    'SM_NUM_GPUS': json.dumps({num_gpus}),
+
+}}
+
+# create Hugging Face Model Class
+huggingface_model = HuggingFaceModel(
+	image_uri=get_huggingface_llm_image_uri("huggingface",version="1.0.3"),
+	env=hub,
+	role=role, 
+)
+
+# deploy model to SageMaker Inference
+predictor = huggingface_model.deploy(
+	initial_instance_count=1,
+	instance_type="{instance_type}",
+	container_startup_health_check_timeout=300,
+  )
+  
+# send request
+predictor.predict({{
+	"inputs": "My name is Julien and I like to",
+}})
+"""
+
 
 SAGEMAKER_INFERENCE_TASK_SNIPPET_MAP = {
     "text-classification": INFERENCE_SNIPPET_BASIC,
@@ -221,4 +247,6 @@ SAGEMAKER_INFERENCE_TASK_SNIPPET_MAP = {
     "image-classification": INFERENCE_SNIPPET_FILE,
     "object-detection": INFERENCE_SNIPPET_FILE,
     "image-segmentation": INFERENCE_SNIPPET_FILE,
+    ### TGI
+    "tgi": TGI_INFERENCE_SNIPPET,
 }
