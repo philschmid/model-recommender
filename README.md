@@ -1,6 +1,6 @@
-# Hugging Face Modeler
+# Hugging Face recommender
 
-Hugging Face Modeler is a utility package to estimate and get helpful information for deploying and training hugging face models.
+Hugging Face recommender is a utility package to estimate and get helpful information for deploying and training hugging face models.
 
 ## Getting Started
 
@@ -10,8 +10,8 @@ pip install -e .
 
 get info
 ```bash
-modeler -m bert-base-uncased
-modeler -m tiiuae/falcon-7b
+recommender -m bert-base-uncased
+recommender -m tiiuae/falcon-7b
 ```
 
 ## Features

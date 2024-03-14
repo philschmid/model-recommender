@@ -8,10 +8,10 @@ Issues = "https://github.com/unknown/hatch-demo/issues"
 Source = "https://github.com/unknown/hatch-demo"
 
 [tool.hatch.version]
-path = "modeler/__init__.py"
+path = "recommender/__init__.py"
 
 [project]
-name = "modeler"
+name = "recommender"
 description = "Description"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,7 +32,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
 ]
 dynamic = ["version"]
-scripts = { modeler = "modeler.cli:main" }
+scripts = { recommender = "recommender.cli:main" }
 dependencies = ["jinja2"]
 
 [project.optional-dependencies]

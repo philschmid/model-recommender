@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from modeler.main import modeler
+from recommender.main import recommender
 import json
 
 
@@ -12,5 +12,5 @@ def parse_args():
 
 def main():
     args = parse_args()
-    r = modeler(args.model_id)
+    r = recommender(args.model_id)
     return json.dumps(r, default=lambda o: o.__dict__, indent=2)
