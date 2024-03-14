@@ -5,7 +5,10 @@ from recommender.utils.const import ARCHICTECTURE_MAX_LENGTH_MAP
 
 def get_quantization_type(model_id: str):
     """Get the quantization type for the model"""
-    if "gptq" in model_id.lower():
+    config = AutoConfig.from_pretrained(model_id)
+    if getattr(config, "quantization_config", None):
+        return config.quantization_config["quant_method"]
+    elif "gptq" in model_id.lower():
         return "gptq"
     elif "awq" in model_id.lower():
         return "awq"

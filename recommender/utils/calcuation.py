@@ -34,9 +34,13 @@ def get_model_size(model_id, dtype):
 
 
 def get_real_size_with_buffer(model_memory, tgi_memory, num_gpus):
-    return (
+    real_size = (
         model_memory + tgi_memory + (num_gpus * DEFAULT_PYTORCH_USAGE_PER_GPU)
     ) * DEFAULT_BUFFER_PERCENTAGE
+    return {
+        "real_memory_in_bytes": real_size,
+        "real_memory_in_gigabytes": get_size_in_gigabytes(real_size),
+    }
 
 
 def get_memory_per_model_and_tgi(model_id, max_prefill_tokens, dtype, num_gpus=1):

@@ -33,7 +33,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 scripts = { recommender = "recommender.cli:main" }
-dependencies = ["jinja2"]
+dependencies = ["transformers", "torch>=2.2.0", "accelerate"]
 
 [project.optional-dependencies]
 test = ["pytest", "ruff", "black", "isort", "mypy", "hatch"]
