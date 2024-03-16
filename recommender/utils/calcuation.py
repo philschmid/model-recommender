@@ -26,10 +26,11 @@ def get_tgi_memory(model_id, max_prefill_tokens, dtype):
 def get_model_size(model_id, dtype):
     args = ACCELERATE_PARSER.parse_args([model_id, "--dtypes", dtype])
     output = gather_data(args)
+    model_size = output[0][2] if dtype != "int4" else output[0][2] * 1.5
     return {
         "dtype": dtype,
-        "model_size_in_bytes": output[0][2],
-        "model_size_in_gigabytes": get_size_in_gigabytes(output[0][2]),
+        "model_size_in_bytes": model_size,
+        "model_size_in_gigabytes": get_size_in_gigabytes(model_size),
     }
 
 
@@ -52,11 +53,12 @@ def get_memory_per_model_and_tgi(model_id, max_prefill_tokens, dtype, num_gpus=1
 
     return {
         "dtype": dtype,
-        "real_memory_in_bytes": real_memory_with_buffer,
-        "real_memory_in_gigabytes": get_size_in_gigabytes(real_memory_with_buffer),
-        "real_memory_per_gpu_in_bytes": real_memory_with_buffer / num_gpus,
-        "real_memory_per_gpu_in_gigabytes": get_size_in_gigabytes(
-            real_memory_with_buffer
-        )
+        "real_memory_in_bytes": real_memory_with_buffer["real_memory_in_bytes"],
+        "real_memory_in_gigabytes": real_memory_with_buffer["real_memory_in_gigabytes"],
+        "real_memory_per_gpu_in_bytes": real_memory_with_buffer["real_memory_in_bytes"]
+        / num_gpus,
+        "real_memory_per_gpu_in_gigabytes": real_memory_with_buffer[
+            "real_memory_in_gigabytes"
+        ]
         / num_gpus,
     }
