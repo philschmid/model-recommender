@@ -1,4 +1,4 @@
-from transformers import AutoConfig
+from transformers import AutoConfig, AutoTokenizer
 
 from recommender.utils.const import ARCHICTECTURE_MAX_LENGTH_MAP
 
@@ -16,7 +16,11 @@ def get_quantization_type(model_id: str):
         return None
 
 
-def get_max_prompt_length(model_id: str):
+def get_max_sequence_length(model_id: str):
     """Get the max prompt length for the model"""
-    config = AutoConfig.from_pretrained(model_id)
-    return ARCHICTECTURE_MAX_LENGTH_MAP.get(config.model_type, 2048)
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    if tokenizer.model_max_length < 100_000:
+        return tokenizer.model_max_length
+    else:
+        config = AutoConfig.from_pretrained(model_id)
+        return ARCHICTECTURE_MAX_LENGTH_MAP.get(config.model_type, 2048)

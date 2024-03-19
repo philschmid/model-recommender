@@ -12,7 +12,120 @@ ARCHICTECTURE_MAX_LENGTH_MAP = {
     "gemma": 4096,
     "mistral": 4096,
     "mixtral": 4096,
+    "gpt_bigcode": 8192,
+    "starcoder2": 16384,
 }
+
+COMMON_TGI_CONFIGS = [
+    {
+        "max_input_length": 1512,
+        "max_total_tokens": 2048,
+        "max_prefill_tokens": 2048,
+    },
+    {
+        "max_input_length": 2048,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 4096,
+    },
+    {
+        "max_input_length": 3072,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 4096,
+    },
+    {
+        "max_input_length": 3072,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 6144,
+    },
+    {
+        "max_input_length": 2048,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 8192,
+    },
+    {
+        "max_input_length": 3072,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 8192,
+    },
+    {
+        "max_input_length": 3072,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 16384,
+    },
+    {
+        "max_input_length": 4000,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 32768,
+    },
+    {
+        "max_input_length": 4096,
+        "max_total_tokens": 8192,
+        "max_prefill_tokens": 8192,
+    },
+    {
+        "max_input_length": 4096,
+        "max_total_tokens": 8192,
+        "max_prefill_tokens": 16384,
+    },
+    {
+        "max_input_length": 8000,
+        "max_total_tokens": 8192,
+        "max_prefill_tokens": 32768,
+    },
+    {
+        "max_input_length": 8000,
+        "max_total_tokens": 16384,
+        "max_prefill_tokens": 16384,
+    },
+    {
+        "max_input_length": 8000,
+        "max_total_tokens": 16384,
+        "max_prefill_tokens": 32768,
+    },
+]
+
+COMMON_GPU_CONFIGS = [
+    {
+        "num_gpus": 1,
+        "gpu_memory": 16,
+    },
+    {
+        "num_gpus": 1,
+        "gpu_memory": 24,
+    },
+    {
+        "num_gpus": 1,
+        "gpu_memory": 40,
+    },
+    {
+        "num_gpus": 2,
+        "gpu_memory": 48,
+    },
+    {
+        "num_gpus": 1,
+        "gpu_memory": 80,
+    },
+    {
+        "num_gpus": 4,
+        "gpu_memory": 96,
+    },
+    {
+        "num_gpus": 2,
+        "gpu_memory": 160,
+    },
+    {
+        "num_gpus": 8,
+        "gpu_memory": 192,
+    },
+    {
+        "num_gpus": 4,
+        "gpu_memory": 320,
+    },
+    {
+        "num_gpus": 8,
+        "gpu_memory": 640,
+    },
+]
 
 SAGEMAKER_INFERENCE_INSTANCE_TYPES = {
     "cpu": [

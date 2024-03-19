@@ -1,3 +1,4 @@
+import logging
 import torch
 from transformers import AutoConfig
 from recommender.utils.const import (
@@ -8,14 +9,34 @@ from recommender.utils.const import (
 from accelerate.commands.estimate import gather_data
 from recommender.utils.utils import get_size_in_gigabytes
 
+logger = logging.getLogger(__name__)
 
-def get_tgi_memory(model_id, max_prefill_tokens, dtype):
-    """Get the memory required for the TGI model"""
+
+def get_tgi_memory(
+    model_id: str = None,
+    max_prefill_tokens: int = None,
+    max_total_tokens: int = None,
+    max_input_length: int = None,
+    dtype: str = None,
+):
+    """Get the memory required for the TGI model based on the model_id, max_prefill_tokens and max_total_tokens"""
     dtype = "float16" if dtype == "int4" else dtype
     config = AutoConfig.from_pretrained(model_id)
     # calculate the memory required for max prefilled tokens
-    tensor_size = (max_prefill_tokens**2) * config.num_attention_heads
-    memory = tensor_size * getattr(torch, dtype).itemsize
+    prefill_tensor_size = (max_prefill_tokens**2) * config.num_attention_heads
+    prefill_memory = prefill_tensor_size * getattr(torch, dtype).itemsize
+    logger.debug(f"Required memory for prefill: {prefill_memory}")
+    # calculate the memory required for max total tokens
+    max_tensor_size = (
+        (max_total_tokens - max_input_length)
+        * config.hidden_size
+        * config.num_attention_heads
+    )
+    num_requests = 4  # used in TGI for warmup
+    max_memory = max_tensor_size * num_requests * getattr(torch, dtype).itemsize
+    logger.debug(f"Required memory for max total tokens: {max_memory}")
+    # summarize the memory required for the TGI model
+    memory = prefill_memory + max_memory
     return {
         "dtype": dtype,
         "memory_in_bytes": memory,
