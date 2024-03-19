@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import json
 import gradio as gr
 from recommender.main import get_tgi_config
@@ -10,7 +11,7 @@ def greet(model_id, gpu_memory, num_gpus):
         return json.dumps({"error": str(e)})
     if configs is None:
         return json.dumps({"error": f"Couldn't generate TGI config for {model_id}"})
-    return json.dumps(configs)
+    return json.dumps(asdict(configs))
 
 
 theme = gr.themes.Monochrome(

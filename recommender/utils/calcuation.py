@@ -59,7 +59,10 @@ def get_tgi_memory(
     max_memory = max_tensor_size * num_requests * getattr(torch, dtype).itemsize
     logger.debug(f"Required memory for max total tokens: {max_memory}")
     # summarize the memory required for the TGI model
-    memory = prefill_memory + max_memory
+    memory = prefill_memory + max_memory  #
+    if config.model_type == "gemma":
+        memory = memory * 2
+
     return MemoryObject(dtype=dtype, in_bytes=memory)
 
 
