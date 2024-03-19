@@ -11,7 +11,7 @@ ARCHICTECTURE_MAX_LENGTH_MAP = {
     "falcon": 2048,
     "gemma": 4096,
     "mistral": 4096,
-    "mixtral": 4096,
+    "mixtral": 32768,
     "gpt_bigcode": 8192,
     "starcoder2": 16384,
 }

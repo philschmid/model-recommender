@@ -1,46 +1,61 @@
+from dataclasses import asdict
 import logging
 from fastapi_cache.decorator import cache
 from pydantic import BaseModel, Field
 
-from app.utils import cached_neuron_cache_lookup
+from recommender.main import get_tgi_config
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+
+from recommender.utils.calcuation import TGIConfig
 
 router = APIRouter()
 
 logger = logging.getLogger("uvicorn")
 
 
+from fastapi_cache.decorator import cache
+
+
 class PathParams(BaseModel):
-    modelid: str = Field(None, description="Hugging Face Model ID to lookup")
+    model_id: str = Field(None, description="Hugging Face Model ID to lookup")
+    gpu_memory: int = Field(None, description="GPU memory in GB")
 
 
-@router.get("/config/{provider}")
+@router.get("/tgi/config")
 @cache(expire=3600 * 3)  # cache 3 hours
-async def lookup(params: PathParams = Depends()):
-    if params.modelid == "":
-        # Returns 200 response to be cacheable
+async def config(params: PathParams = Depends()):
+    if params.model_id == "" or params.gpu_memory == "":
         return JSONResponse(
-            {"error": "No modelid provided", "cached_configs": []}, status_code=200
+            {"error": "No model_id or gpu_memory provided", "config": {}},
+            status_code=400,
         )
-
+    gpu_memory = int(params.gpu_memory)
     try:
-        res = await cached_neuron_cache_lookup(params.modelid)
-        return JSONResponse({"cached_configs": res}, status_code=200)
+        tgi = get_tgi_config(params.model_id, gpu_memory)
+        if tgi is None:
+            return JSONResponse(
+                {
+                    "error": f"Couldn't generate TGI config for {params.model_id}",
+                    "config": {},
+                },
+                status_code=400,
+            )
+        return JSONResponse({"config": asdict(tgi)}, status_code=200)
 
     except Exception as e:
-        logger.error(f"Error looking up {params.modelid}: {e}")
+        logger.error(f"Error looking up {params.model_id}: {e}")
         if "gated repo" in str(e):
             # Returns 200 response to be cacheable
             return JSONResponse(
                 {
-                    "error": f"Model {params.modelid} is not public",
-                    "cached_configs": [],
+                    "error": f"Model {params.model_id} is not public",
+                    "config": {},
                 },
-                status_code=200,
+                status_code=400,
             )
         # Returns 200 response to be cacheable
         return JSONResponse(
-            {"error": f"No cached entries for {params.modelid}", "cached_configs": []},
-            status_code=200,
+            {"error": str(e), "config": {}},
+            status_code=400,
         )

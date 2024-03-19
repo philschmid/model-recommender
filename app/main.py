@@ -6,12 +6,12 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 
-from app.routes import config
+from app.routes import recommendation, config
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-router = APIRouter()
+router_v1 = APIRouter()
 
 # Add CORSMiddleware to the application
 app.add_middleware(
@@ -26,15 +26,10 @@ app.add_middleware(
 logger = logging.getLogger("uvicorn")
 
 # Redis connection
+app.include_router(config.router, prefix="/v1")
+
+
 redis = None
-
-# IDS
-# Gated: meta-llama/Llama-2-7b-chat-hf
-# Private:
-# Public: HuggingFaceH4/zephyr-7b-beta
-# False: meta-llama/Llama-2-7b
-
-app.include_router(config.router)
 
 
 @app.on_event("startup")
