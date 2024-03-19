@@ -7,7 +7,11 @@ from recommender.utils.calcuation import (
     get_tgi_memory,
 )
 from recommender.utils.const import COMMON_GPU_CONFIGS, COMMON_TGI_CONFIGS
-from recommender.utils.model import get_max_sequence_length, get_quantization_type
+from recommender.utils.model import (
+    get_max_sequence_length,
+    get_quantization_type,
+    is_tgi_supported,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +22,11 @@ def get_tgi_config(
     num_gpus: int = 1,
 ):
     """Create a TGI config for a model based on the GPU memory and number of GPUs"""
+    supported = is_tgi_supported(model_id)
+    if not supported:
+        logger.debug(f"Model {model_id} is not supported by TGI")
+        raise ValueError(f"Model {model_id} is not supported by TGI")
+
     quantization_type = get_quantization_type(model_id=model_id)
     max_sequence_length = get_max_sequence_length(model_id=model_id)
 

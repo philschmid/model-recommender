@@ -1,6 +1,9 @@
 from transformers import AutoConfig, AutoTokenizer
 
-from recommender.utils.const import ARCHICTECTURE_MAX_LENGTH_MAP
+from recommender.utils.const import (
+    ARCHICTECTURE_MAX_LENGTH_MAP,
+    TGI_SUPPORTED_MODEL_TYPES,
+)
 
 
 def get_quantization_type(model_id: str):
@@ -24,3 +27,9 @@ def get_max_sequence_length(model_id: str):
     else:
         config = AutoConfig.from_pretrained(model_id)
         return ARCHICTECTURE_MAX_LENGTH_MAP.get(config.model_type, 2048)
+
+
+def is_tgi_supported(model_id: str):
+    """Check if the model is supported by TGI"""
+    config = AutoConfig.from_pretrained(model_id)
+    return config.model_type in TGI_SUPPORTED_MODEL_TYPES

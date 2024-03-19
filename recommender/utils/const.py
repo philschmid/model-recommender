@@ -16,6 +16,29 @@ ARCHICTECTURE_MAX_LENGTH_MAP = {
     "starcoder2": 16384,
 }
 
+TGI_SUPPORTED_MODEL_TYPES = [
+    "bloom",
+    "t5",
+    "mt5",
+    "gpt_neox",
+    "gpt2",
+    "llama",
+    "gpt_bigcode",
+    "RefinedWeb",
+    "RefinedWebModel",
+    "falcon",
+    "mpt",
+    "idefics",
+    "opt",
+    "mistral",
+    "mixtral",
+    "gemma",
+    "phi",
+    "qwen2",
+    "starcoder2",
+]
+
+
 COMMON_TGI_CONFIGS = [
     {
         "max_input_length": 1512,
