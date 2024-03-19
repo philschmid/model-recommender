@@ -1,5 +1,6 @@
 import logging
 from recommender.utils.calcuation import (
+    TGIConfig,
     get_memory_per_model_and_tgi,
     get_model_size,
     get_real_size_with_buffer,
@@ -32,7 +33,7 @@ def get_tgi_config(
     _configs = [c for c in _configs if c["max_total_tokens"] <= max_sequence_length]
     logger.debug(f"Filtered configs: {_configs}")
     for c in _configs:
-        print(f"Trying config: {c}")
+        logger.debug(f"Trying config: {c}")
         tgi_additional_memory = get_tgi_memory(
             model_id=model_id,
             dtype="float16",
@@ -41,23 +42,21 @@ def get_tgi_config(
             max_prefill_tokens=c["max_prefill_tokens"],
         )
         real_memory = get_real_size_with_buffer(
-            model_memory=model_memory["model_size_in_bytes"],
-            tgi_memory=tgi_additional_memory["memory_in_bytes"],
+            model_memory=model_memory.in_bytes,
+            tgi_memory=tgi_additional_memory.in_bytes,
             num_gpus=num_gpus,
         )
-        if real_memory["real_memory_in_gigabytes"] < gpu_memory:
-            return {
-                "model_id": model_id,
-                "max_batch_prefill_tokens": c["max_prefill_tokens"],
-                "max_input_length": c["max_input_length"],
-                "max_total_tokens": c["max_total_tokens"],
-                "num_gpus": num_gpus,
-                "quantization_type": quantization_type,
-                "estimated_memory_in_gigabytes": real_memory[
-                    "real_memory_in_gigabytes"
-                ],
-            }
-    print(f"Could not find a TGI config for {model_id}")
+        if real_memory.in_gb < gpu_memory:
+            return TGIConfig(
+                model_id=model_id,
+                max_batch_prefill_tokens=c["max_prefill_tokens"],
+                max_input_length=c["max_input_length"],
+                max_total_tokens=c["max_total_tokens"],
+                num_gpus=num_gpus,
+                quantization_type=quantization_type,
+                estimated_memory_in_gigabytes=real_memory.in_gb,
+            )
+    logger.debug(f"Could not find a TGI config for {model_id}")
     return None
 
 
@@ -89,7 +88,7 @@ def validate_tgi_config(
         dtype=dtype,
         num_gpus=num_gpus,
     )
-    if needed_memory["real_memory_per_gpu_in_bytes"] > gpu_memory:
+    if needed_memory.in_gb > gpu_memory:
         return False
     return True
 

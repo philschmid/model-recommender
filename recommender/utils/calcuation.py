@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 import logging
+from typing import Optional
 import torch
 from transformers import AutoConfig
 from recommender.utils.const import (
@@ -10,6 +12,27 @@ from accelerate.commands.estimate import gather_data
 from recommender.utils.utils import get_size_in_gigabytes
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TGIConfig:
+    model_id: str
+    max_batch_prefill_tokens: int
+    max_input_length: int
+    max_total_tokens: int
+    num_gpus: int
+    quantization_type: str
+    estimated_memory_in_gigabytes: float
+
+
+@dataclass
+class MemoryObject:
+    in_bytes: int
+    dtype: Optional[str] = None
+
+    @property
+    def in_gb(self):
+        return get_size_in_gigabytes(self.in_bytes)
 
 
 def get_tgi_memory(
@@ -37,49 +60,30 @@ def get_tgi_memory(
     logger.debug(f"Required memory for max total tokens: {max_memory}")
     # summarize the memory required for the TGI model
     memory = prefill_memory + max_memory
-    return {
-        "dtype": dtype,
-        "memory_in_bytes": memory,
-        "memory_in_gigabytes": get_size_in_gigabytes(memory),
-    }
+    return MemoryObject(dtype=dtype, in_bytes=memory)
 
 
-def get_model_size(model_id, dtype):
+def get_model_size(model_id: str, dtype: str):
     args = ACCELERATE_PARSER.parse_args([model_id, "--dtypes", dtype])
     output = gather_data(args)
     model_size = output[0][2] if dtype != "int4" else output[0][2] * 1.5
-    return {
-        "dtype": dtype,
-        "model_size_in_bytes": model_size,
-        "model_size_in_gigabytes": get_size_in_gigabytes(model_size),
-    }
+    return MemoryObject(dtype=dtype, in_bytes=model_size)
 
 
-def get_real_size_with_buffer(model_memory, tgi_memory, num_gpus):
+def get_real_size_with_buffer(model_memory: int, tgi_memory: int, num_gpus: int):
     real_size = (
         model_memory + tgi_memory + (num_gpus * DEFAULT_PYTORCH_USAGE_PER_GPU)
     ) * DEFAULT_BUFFER_PERCENTAGE
-    return {
-        "real_memory_in_bytes": real_size,
-        "real_memory_in_gigabytes": get_size_in_gigabytes(real_size),
-    }
+    return MemoryObject(dtype="float16", in_bytes=real_size)
 
 
-def get_memory_per_model_and_tgi(model_id, max_prefill_tokens, dtype, num_gpus=1):
+def get_memory_per_model_and_tgi(
+    model_id: str, max_prefill_tokens: int, dtype: str, num_gpus=1
+):
     model_size = get_model_size(model_id, dtype)
     tgi_memory = get_tgi_memory(model_id, max_prefill_tokens, dtype)
     real_memory_with_buffer = get_real_size_with_buffer(
-        model_size["model_size_in_bytes"], tgi_memory["memory_in_bytes"], num_gpus
+        model_size.in_bytes, tgi_memory.in_bytes, num_gpus
     )
 
-    return {
-        "dtype": dtype,
-        "real_memory_in_bytes": real_memory_with_buffer["real_memory_in_bytes"],
-        "real_memory_in_gigabytes": real_memory_with_buffer["real_memory_in_gigabytes"],
-        "real_memory_per_gpu_in_bytes": real_memory_with_buffer["real_memory_in_bytes"]
-        / num_gpus,
-        "real_memory_per_gpu_in_gigabytes": real_memory_with_buffer[
-            "real_memory_in_gigabytes"
-        ]
-        / num_gpus,
-    }
+    return MemoryObject(dtype=dtype, in_bytes=real_memory_with_buffer.in_bytes)
