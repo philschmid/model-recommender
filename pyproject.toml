@@ -33,7 +33,12 @@ classifiers = [
 ]
 dynamic = ["version"]
 scripts = { recommender = "recommender.cli:main" }
-dependencies = ["transformers", "torch>=2.2.0", "accelerate", "sentencepiece"]
+dependencies = [
+  "transformers==4.39.0",
+  "torch>=2.2.0",
+  "accelerate",
+  "sentencepiece",
+]
 
 [project.optional-dependencies]
 test = ["pytest", "ruff", "black", "isort", "mypy", "hatch"]

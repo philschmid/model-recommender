@@ -29,7 +29,6 @@ def get_tgi_config(
 
     quantization_type = get_quantization_type(model_id=model_id)
     max_sequence_length = get_max_sequence_length(model_id=model_id)
-
     if quantization_type:
         model_memory = get_model_size(model_id=model_id, dtype="int4")
     else:
@@ -40,6 +39,11 @@ def get_tgi_config(
     _configs.reverse()
     # filter out the configs based on the model max sequence length
     _configs = [c for c in _configs if c["max_total_tokens"] <= max_sequence_length]
+    if len(_configs) == 0:
+        logger.info(
+            f"Model {model_id} has a max sequence length of {max_sequence_length} could not find a TGI config"
+        )
+        return None
     logger.debug(f"Filtered configs: {_configs}")
     for c in _configs:
         logger.debug(f"Trying config: {c}")

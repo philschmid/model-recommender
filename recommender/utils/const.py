@@ -41,6 +41,21 @@ TGI_SUPPORTED_MODEL_TYPES = [
 
 COMMON_TGI_CONFIGS = [
     {
+        "max_input_length": 800,
+        "max_total_tokens": 1024,
+        "max_prefill_tokens": 2048,
+    },
+    {
+        "max_input_length": 1024,
+        "max_total_tokens": 4096,
+        "max_prefill_tokens": 8192,
+    },
+    {
+        "max_input_length": 1024,
+        "max_total_tokens": 2048,
+        "max_prefill_tokens": 2048,
+    },
+    {
         "max_input_length": 1512,
         "max_total_tokens": 2048,
         "max_prefill_tokens": 2048,
@@ -149,6 +164,26 @@ COMMON_GPU_CONFIGS = [
         "gpu_memory": 640,
     },
 ]
+
+GOOGLE_CLOUD_INFERENCE_INSTANCE_TYPES = {
+    "gpu": [
+        # order by most optimal based on num gpus and memory
+        {"name": "g2-standard-4", "memoryInGB": 24, "numGpus": 1},
+        {"name": "g2-standard-24", "memoryInGB": 48, "numGpus": 2},
+        {"name": "a2-ultragpu-1g", "memoryInGB": 80, "numGpus": 1},
+        {"name": "a2-ultragpu-2g", "memoryInGB": 160, "numGpus": 2},
+        {"name": "a2-ultragpu-4g", "memoryInGB": 320, "numGpus": 4},
+        {"name": "a2-ultragpu-8g", "memoryInGB": 640, "numGpus": 8},
+        {"name": "a3-highgpu-8g", "memoryInGB": 640, "numGpus": 8},
+        {"name": "g2-standard-48", "memoryInGB": 96, "numGpus": 4},
+        {"name": "g2-standard-96", "memoryInGB": 192, "numGpus": 8},
+        {"name": "a2-highgpu-1g", "memoryInGB": 40, "numGpus": 1},
+        {"name": "a2-highgpu-2g", "memoryInGB": 80, "numGpus": 2},
+        {"name": "a2-highgpu-4g", "memoryInGB": 160, "numGpus": 4},
+        {"name": "a2-highgpu-8g", "memoryInGB": 320, "numGpus": 8},
+    ]
+}
+
 
 SAGEMAKER_INFERENCE_INSTANCE_TYPES = {
     "cpu": [
