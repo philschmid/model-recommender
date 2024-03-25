@@ -21,8 +21,8 @@ class TGIConfig:
     max_batch_prefill_tokens: int
     max_input_length: int
     max_total_tokens: int
-    num_gpus: int
-    quantization_type: str
+    num_shard: int
+    quantize: str
     estimated_memory_in_gigabytes: float
 
 
@@ -45,7 +45,7 @@ def get_tgi_memory(
 ):
     """Get the memory required for the TGI model based on the model_id, max_prefill_tokens and max_total_tokens"""
     dtype = "float16" if dtype == "int4" else dtype
-    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+    config = AutoConfig.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
 
     # calculate the memory required for max prefilled tokens
     prefill_tensor_size = (max_prefill_tokens**2) * config.num_attention_heads
@@ -69,7 +69,7 @@ def get_tgi_memory(
 
 
 def get_model_size(model_id: str, dtype: str):
-    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+    config = AutoConfig.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
     # check max_position_embeddings to avoid out of memory
     if config.max_position_embeddings > 100_000:
         raise ValueError(

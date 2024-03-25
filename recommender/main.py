@@ -65,8 +65,8 @@ def get_tgi_config(
                 max_batch_prefill_tokens=c["max_prefill_tokens"],
                 max_input_length=c["max_input_length"],
                 max_total_tokens=c["max_total_tokens"],
-                num_gpus=num_gpus,
-                quantization_type=quantization_type,
+                num_shard=num_gpus,
+                quantize=quantization_type,
                 estimated_memory_in_gigabytes=real_memory.in_gb,
             )
     logger.debug(f"Could not find a TGI config for {model_id}")

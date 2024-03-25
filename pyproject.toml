@@ -41,6 +41,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+api = ["fastapi", "fastapi-cache2[redis]"]
 test = ["pytest", "ruff", "black", "isort", "mypy", "hatch"]
 dev = ["ruff", "black", "isort", "mypy", "hatch"]
 docs = [
@@ -53,20 +54,8 @@ docs = [
 
 [tool.isort]
 profile = "black"
-known_third_party = ["fastapi", "pydantic", "starlette"]
+known_third_party = ["accelerate", "transformers", "torch"]
 
-# [tool.coverage.run]
-# parallel = true
-# source = [
-#     "docs_src",
-#     "tests",
-#     "fastapi"
-# ]
-# context = '${CONTEXT}'
-# omit = [
-#     "docs_src/response_model/tutorial003_04.py",
-#     "docs_src/response_model/tutorial003_04_py310.py",
-# ]
 
 [tool.ruff]
 select = [

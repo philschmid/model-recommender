@@ -9,7 +9,7 @@ from recommender.utils.const import (
 
 def get_quantization_type(model_id: str):
     """Get the quantization type for the model"""
-    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+    config = AutoConfig.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
     if getattr(config, "quantization_config", None):
         return config.quantization_config["quant_method"]
     elif "gptq" in model_id.lower():
@@ -23,18 +23,18 @@ def get_quantization_type(model_id: str):
 def get_max_sequence_length(model_id: str):
     """Get the max prompt length for the model"""
     tokenizer = AutoTokenizer.from_pretrained(
-        model_id, remote_trust_code=TRUST_REMOTE_CODE
+        model_id, trust_remote_code=TRUST_REMOTE_CODE
     )
     if tokenizer.model_max_length < 100_000:
         return tokenizer.model_max_length
     else:
         config = AutoConfig.from_pretrained(
-            model_id, remote_trust_code=TRUST_REMOTE_CODE
+            model_id, trust_remote_code=TRUST_REMOTE_CODE
         )
         return ARCHICTECTURE_MAX_LENGTH_MAP.get(config.model_type, 2048)
 
 
 def is_tgi_supported(model_id: str):
     """Check if the model is supported by TGI"""
-    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+    config = AutoConfig.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
     return config.model_type in TGI_SUPPORTED_MODEL_TYPES

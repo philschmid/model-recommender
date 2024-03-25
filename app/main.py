@@ -27,6 +27,7 @@ logger = logging.getLogger("uvicorn")
 
 # Redis connection
 app.include_router(config.router, prefix="/v1")
+app.include_router(recommendation.router, prefix="/v1")
 
 
 redis = None
