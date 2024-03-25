@@ -55,7 +55,7 @@ docker build -t recommender-api -f api/Dockerfile .
 6. Run the app:
 
 ```sh
-docker run -d --name recommender-api -p 8000:8000 recommender-api
+docker run -p 8000:8000 recommender-api
 ```
 
 7. curl the app:
