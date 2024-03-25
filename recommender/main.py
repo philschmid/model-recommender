@@ -41,7 +41,9 @@ def get_tgi_config(
     # filter out the configs based on the model max sequence length
     _configs = [c for c in _configs if c["max_total_tokens"] <= max_sequence_length]
     if len(_configs) == 0:
-        logger.info(f"Model {model_id} has a max sequence length of {max_sequence_length} could not find a TGI config")
+        logger.info(
+            f"Model {model_id} has a max sequence length of {max_sequence_length} could not find a TGI config"
+        )
         return None
     logger.debug(f"Filtered configs: {_configs}")
     for c in _configs:
@@ -103,8 +105,3 @@ def validate_tgi_config(
     if needed_memory.in_gb > gpu_memory:
         return False
     return True
-
-
-def get_aws_instance_type(model_id: str, revision: str = "main", hub_token: str = None):
-    """Validates if a TGI config fits on my GPU"""
-    pass

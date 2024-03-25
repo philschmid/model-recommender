@@ -1,7 +1,7 @@
 import json
 from argparse import ArgumentParser
 
-from recommender.main import recommender
+from recommender.main import get_recommendation
 
 
 def parse_args():
@@ -13,5 +13,5 @@ def parse_args():
 
 def main():
     args = parse_args()
-    r = recommender(args.model_id)
+    r = get_recommendation(args.model_id)
     return json.dumps(r, default=lambda o: o.__dict__, indent=2)
