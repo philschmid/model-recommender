@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from app.utils import HfBaseModel, handle_exception
+from api.utils import HfBaseModel, handle_exception
 from recommender.main import get_tgi_config
 from recommender.utils.const import (
     GOOGLE_CLOUD_INFERENCE_INSTANCE_TYPES,

@@ -3,7 +3,7 @@ import logging
 from fastapi_cache.decorator import cache
 from pydantic import BaseModel, Field
 
-from app.utils import HfBaseModel, handle_exception
+from api.utils import HfBaseModel, handle_exception
 from recommender.main import get_tgi_config
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse

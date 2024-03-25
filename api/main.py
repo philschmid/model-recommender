@@ -6,7 +6,7 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 
-from app.routes import recommendation, config
+from api.routes import recommendation, config
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
