@@ -7,6 +7,7 @@ from recommender.utils.const import (
     ACCELERATE_PARSER,
     DEFAULT_BUFFER_PERCENTAGE,
     DEFAULT_PYTORCH_USAGE_PER_GPU,
+    TRUST_REMOTE_CODE,
 )
 from accelerate.commands.estimate import gather_data
 from recommender.utils.utils import get_size_in_gigabytes
@@ -44,7 +45,8 @@ def get_tgi_memory(
 ):
     """Get the memory required for the TGI model based on the model_id, max_prefill_tokens and max_total_tokens"""
     dtype = "float16" if dtype == "int4" else dtype
-    config = AutoConfig.from_pretrained(model_id)
+    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+
     # calculate the memory required for max prefilled tokens
     prefill_tensor_size = (max_prefill_tokens**2) * config.num_attention_heads
     prefill_memory = prefill_tensor_size * getattr(torch, dtype).itemsize
@@ -67,6 +69,13 @@ def get_tgi_memory(
 
 
 def get_model_size(model_id: str, dtype: str):
+    config = AutoConfig.from_pretrained(model_id, remote_trust_code=TRUST_REMOTE_CODE)
+    # check max_position_embeddings to avoid out of memory
+    if config.max_position_embeddings > 100_000:
+        raise ValueError(
+            f"max_position_embeddings is too high: {config.max_position_embeddings}, could lead to out of memory"
+        )
+
     args = ACCELERATE_PARSER.parse_args([model_id, "--dtypes", dtype])
     output = gather_data(args)
     model_size = output[0][2] if dtype != "int4" else output[0][2] * 1.5

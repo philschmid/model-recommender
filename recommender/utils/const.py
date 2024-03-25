@@ -1,7 +1,10 @@
 from accelerate.commands.estimate import estimate_command_parser
+import os
 
 ACCELERATE_PARSER = estimate_command_parser()
 D_TYPES = ["float32", "float16", "int8", "int4"]
+
+TRUST_REMOTE_CODE = os.getenv("TRUST_REMOTE_CODE", "false").lower() == "true"
 
 DEFAULT_PYTORCH_USAGE_PER_GPU = 1_000_000_000
 DEFAULT_BUFFER_PERCENTAGE = 1.2
