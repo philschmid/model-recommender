@@ -1,5 +1,5 @@
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class HfBaseModel(BaseModel):

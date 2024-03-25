@@ -1,0 +1,9 @@
+.dist/
+.chart/
+.idea/
+.github/
+.vscode/
+.ruff_cache/
+notebooks/
+gradio/
+tests/

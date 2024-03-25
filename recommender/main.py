@@ -1,4 +1,5 @@
 import logging
+
 from recommender.utils.calcuation import (
     TGIConfig,
     get_memory_per_model_and_tgi,
@@ -40,9 +41,7 @@ def get_tgi_config(
     # filter out the configs based on the model max sequence length
     _configs = [c for c in _configs if c["max_total_tokens"] <= max_sequence_length]
     if len(_configs) == 0:
-        logger.info(
-            f"Model {model_id} has a max sequence length of {max_sequence_length} could not find a TGI config"
-        )
+        logger.info(f"Model {model_id} has a max sequence length of {max_sequence_length} could not find a TGI config")
         return None
     logger.debug(f"Filtered configs: {_configs}")
     for c in _configs:

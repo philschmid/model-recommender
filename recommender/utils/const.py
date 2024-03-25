@@ -1,5 +1,6 @@
-from accelerate.commands.estimate import estimate_command_parser
 import os
+
+from accelerate.commands.estimate import estimate_command_parser
 
 ACCELERATE_PARSER = estimate_command_parser()
 D_TYPES = ["float32", "float16", "int8", "int4"]

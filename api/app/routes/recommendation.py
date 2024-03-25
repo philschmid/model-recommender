@@ -1,20 +1,19 @@
-from dataclasses import asdict
-from enum import Enum
 import logging
-from fastapi_cache.decorator import cache
-from pydantic import BaseModel, ConfigDict, Field
+from enum import Enum
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from fastapi_cache.decorator import cache
+from pydantic import Field
 
-from api.utils import HfBaseModel, handle_exception
+from app.utils import HfBaseModel, handle_exception
 from recommender.main import get_tgi_config
+from recommender.utils.calcuation import TGIConfig
 from recommender.utils.const import (
-    GOOGLE_CLOUD_INFERENCE_INSTANCE_TYPES,
     AWS_INFERENCE_INSTANCE_TYPES,
+    GOOGLE_CLOUD_INFERENCE_INSTANCE_TYPES,
     HUGGINGFACE_INSTANCE_TYPES,
 )
-from recommender.utils.calcuation import TGIConfig
 
 router = APIRouter()
 
@@ -45,19 +44,13 @@ class RecommendationResponse(HfBaseModel):
 
 
 @router.get("/provider/{provider}/recommend")
-# @cache(expire=3600 * 3)  # cache 3 hours
+@cache(expire=3600 * 3)  # cache 3 hours
 async def recommend(provider: Provider, params: QueryParameter = Depends()):
     if params.model_id == "":
         # Returns 200 response to be cacheable
-        return JSONResponse(
-            {"error": "No modelid provided", "recommendation": []}, status_code=200
-        )
+        return JSONResponse({"error": "No modelid provided", "recommendation": []}, status_code=200)
     # filter potential instance types based on requested memory
-    _instance_map = [
-        config
-        for config in INSTANCE_TYPE_MAP[provider]
-        if config["memoryInGB"] <= params.gpu_memory
-    ]
+    _instance_map = [config for config in INSTANCE_TYPE_MAP[provider] if config["memoryInGB"] <= params.gpu_memory]
     # Try to create model recommendation
     try:
         for config in _instance_map:

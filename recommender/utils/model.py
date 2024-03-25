@@ -22,15 +22,11 @@ def get_quantization_type(model_id: str):
 
 def get_max_sequence_length(model_id: str):
     """Get the max prompt length for the model"""
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_id, trust_remote_code=TRUST_REMOTE_CODE
-    )
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
     if tokenizer.model_max_length < 100_000:
         return tokenizer.model_max_length
     else:
-        config = AutoConfig.from_pretrained(
-            model_id, trust_remote_code=TRUST_REMOTE_CODE
-        )
+        config = AutoConfig.from_pretrained(model_id, trust_remote_code=TRUST_REMOTE_CODE)
         return ARCHICTECTURE_MAX_LENGTH_MAP.get(config.model_type, 2048)
 
 

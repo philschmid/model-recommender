@@ -1,6 +1,12 @@
 # Hugging Face TGI Recommender
 
-Hugging Face recommender is a utility package to estimate and get helpful information for deploying and training hugging face models.
+Hugging Face recommender is a utility package to estimate and get helpful information for deploying and training hugging face models. The package includes: 
+
+* `recommender`: python library to estimate the required resources for a given respecting mode memory, kv-cache and generation. 
+* `api`: FastAPI app to expose the recommender as a REST API.
+* `gradio`: Gradio app to expose the recommender as a web app.
+* `notebooks`: Jupyter notebooks to test and experiment with the recommender, used for our partners, e.g. AWS, Cloudflare, etc.
+* `tests`: Unit tests for the recommender, not much here.
 
 # API
 
@@ -37,32 +43,19 @@ pip install -e ".[api]"
 2. Run the app with in-memory cache:
 
 ```sh
-uvicorn app.main:app --reload
+cd api && uvicorn app.main:app --reload
 ```
 
-3. Run the app with redis cache:
+1. Build the app
 
 ```sh
-docker-compose up -d
-REDIS_URL=redis://localhost:6379 uvicorn app.main:app --reload
-```
-
-4. Run the tests:
-
-```
-pytest
-```
-
-5. Build the app
-
-```sh
-docker build -t cache-lookup .
+docker build -t recommender-api -f api/Dockerfile .
 ```
 
 6. Run the app:
 
 ```sh
-docker run -d --name cache-lookup -p 8000:8000 cache-lookup
+docker run -d --name recommender-api -p 8000:8000 recommender-api
 ```
 
 7. curl the app:
@@ -71,29 +64,7 @@ docker run -d --name cache-lookup -p 8000:8000 cache-lookup
 To test the dummy route, you can use curl or any HTTP client:
 
 ```sh
-curl -X GET "http://localhost:8000/dummy?modelid=123"
-```
-
-## Test 
-
-You can run the tests with:
-
-```sh
-pytest
-```
-
-_Note: We use snapshot testing to test. If you change the output of the function, you will need to update the snapshot._
-
-Update all
-
-```
-pytest --snapshot-update
-```
-
-Update a specific snapshot
-
-```
-pytest --snapshot-update tests/test_generate_tgix_snippet.py
+curl  -X GET 'localhost:8000/v1/provider/gcp/recommend?model_id=HuggingFaceH4%2Fzephyr-7b-beta'
 ```
 
 

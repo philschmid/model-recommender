@@ -1,14 +1,14 @@
 import logging
 import os
 
+from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 
-from api.routes import recommendation, config
-from fastapi import APIRouter, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from app.routes import config, recommendation
 
 app = FastAPI()
 router_v1 = APIRouter()

@@ -1,5 +1,6 @@
-from dataclasses import asdict
 import json
+from dataclasses import asdict
+
 import gradio as gr
 from recommender.main import get_tgi_config
 

@@ -1,21 +1,17 @@
-from dataclasses import asdict
 import logging
-from fastapi_cache.decorator import cache
-from pydantic import BaseModel, Field
 
-from api.utils import HfBaseModel, handle_exception
-from recommender.main import get_tgi_config
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from fastapi_cache.decorator import cache
+from pydantic import Field
 
+from app.utils import HfBaseModel, handle_exception
+from recommender.main import get_tgi_config
 from recommender.utils.calcuation import TGIConfig
 
 router = APIRouter()
 
 logger = logging.getLogger("uvicorn")
-
-
-from fastapi_cache.decorator import cache
 
 
 class PathParams(HfBaseModel):

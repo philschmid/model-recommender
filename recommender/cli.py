@@ -1,6 +1,7 @@
-from argparse import ArgumentParser
-from recommender.main import recommender
 import json
+from argparse import ArgumentParser
+
+from recommender.main import recommender
 
 
 def parse_args():
