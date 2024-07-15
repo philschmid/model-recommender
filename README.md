@@ -2,7 +2,7 @@
 
 Hugging Face recommender is a utility package to estimate and get helpful information for deploying and training hugging face models. The package includes: 
 
-* `recommender`: python library to estimate the required resources for a given respecting mode memory, kv-cache and generation. 
+* `recommender`: python library to estimate the required resources for a given model, respecting memory, kv-cache and generation. 
 * `api`: FastAPI app to expose the recommender as a REST API.
 * `gradio`: Gradio app to expose the recommender as a web app.
 * `notebooks`: Jupyter notebooks to test and experiment with the recommender, used for our partners, e.g. AWS, Cloudflare, etc.
